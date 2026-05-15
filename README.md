@@ -47,8 +47,8 @@ ethara_project/
 │   │   ├── lib/            # api client, date helpers
 │   │   └── App.jsx
 │   └── package.json
-├── package.json            # root — orchestrates build + start for Railway
-├── railway.json            # Railway config
+├── package.json            # root — orchestrates build and start
+├── railway.json            # Railway build/start config
 └── README.md
 ```
 
@@ -98,45 +98,24 @@ npm run dev
 - API: http://localhost:5000
 - Client: http://localhost:5173 (proxies `/api/*` to the server)
 
+
 ---
 
 ## 🌐 Deploy to Railway
 
-Railway serves the entire stack from **one service** — Express serves the React build at `/` and the API at `/api/*`.
+Railway runs the full stack as one web service. Express serves the built React app at `/` and the API at `/api/*`.
 
-### Steps
+Required service variables:
 
-1. **Push this repo to GitHub.**
+| Variable        | Value                                           |
+|-----------------|-------------------------------------------------|
+| `MONGODB_URI`   | MongoDB connection string                       |
+| `JWT_SECRET`    | Long random secret                              |
+| `NODE_ENV`      | `production`                                    |
+| `CLIENT_ORIGIN` | `*` or the generated Railway app domain         |
 
-2. **Create a Railway project** → https://railway.app/new
-   - Choose **Deploy from GitHub repo** → select this repo.
+Railway uses `railway.json` to run `npm run build` during build and `npm start` at deploy time.
 
-3. **Add a MongoDB plugin** to the project:
-   - In your Railway project → **+ New** → **Database** → **Add MongoDB**.
-   - Railway creates a `MONGO_URL` variable in the plugin.
-
-4. **Set environment variables** on the web service (the Railway UI → your service → Variables):
-
-   | Variable         | Value                                                       |
-   |------------------|-------------------------------------------------------------|
-   | `MONGODB_URI`    | `${{MongoDB.MONGO_URL}}` (reference the plugin — do **not** paste the raw URL) |
-   | `JWT_SECRET`     | a long random string (e.g. `openssl rand -hex 32`)          |
-   | `NODE_ENV`       | `production`                                                |
-   | `CLIENT_ORIGIN`  | `*` (same-origin is auto-allowed; safe default)             |
-
-5. **Deploy.** Railway runs `npm run build` then `npm start`. Build steps:
-   - Install client deps → `vite build` produces `client/dist/`
-   - Install server deps → starts Express which also serves `client/dist/`
-
-6. **Seed the production database** (one-time). In Railway → your service → **Settings** → **Deploy** → or open a shell (Railway CLI):
-   ```bash
-   railway run npm run seed
-   ```
-   Or temporarily add a one-off run. Alternatively, just sign up a new account through the UI.
-
-7. **Open the generated domain.** You should see the login page — sign in with a demo account.
-
-> **Tip:** Railway also assigns a `PORT` env var automatically. The server already respects it via `config.port`.
 
 ---
 
@@ -254,7 +233,7 @@ Task {
 | `npm run dev:server` | Server only                                       |
 | `npm run dev:client` | Client only                                       |
 | `npm run seed`       | Reset DB and load demo data                       |
-| `npm run build`      | Build the client (used by Railway)                |
+| `npm run build`      | Build the client for production                   |
 | `npm start`          | Start the production server                       |
 
 ---
